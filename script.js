@@ -169,30 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let items = JSON.parse(localStorage.getItem(type)) || [];
         items.push(item);
         localStorage.setItem(type, JSON.stringify(items));
-        saveDataToFile();
-    }
-
-    function saveDataToFile() {
-        const habits = JSON.parse(localStorage.getItem('habit')) || [];
-        const targets = JSON.parse(localStorage.getItem('target')) || [];
-        const schedules = JSON.parse(localStorage.getItem('schedule')) || [];
-        const chatId = 'YOUR_CHAT_ID'; // Replace with actual chat ID logic
-
-        const data = {
-            [chatId]: {
-                habits,
-                targets,
-                schedules
-            }
-        };
-
-        fetch('/save-data', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
     }
 
     function loadHabitsFromLocalStorage() {
