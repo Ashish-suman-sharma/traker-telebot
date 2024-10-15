@@ -1,9 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     const addHabitButton = document.querySelector('.menu-item:nth-child(1)');
+    const addTargetButton = document.querySelector('.menu-item:nth-child(2)');
     const container = document.querySelector('.container');
 
     addHabitButton.addEventListener('click', () => {
         openHabitForm();
+    });
+
+    addTargetButton.addEventListener('click', () => {
+        openTargetForm();
     });
 
     function openHabitForm() {
@@ -21,6 +26,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelector('.close-form').addEventListener('click', closeHabitForm);
         document.querySelector('#add-habit').addEventListener('click', addHabit);
+    }
+
+    function openTargetForm() {
+        const formHtml = `
+            <div class="habit-form-overlay">
+                <div class="habit-form">
+                    <span class="close-form">&times;</span>
+                    <h2>Add New Target</h2>
+                    <input type="text" id="target-name" placeholder="Target Name" autocomplete="off">
+                    <input type="number" id="target-days" placeholder="Number of Days" autocomplete="off">
+                    <button id="add-target">OK</button>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', formHtml);
+
+        document.querySelector('.close-form').addEventListener('click', closeHabitForm);
+        document.querySelector('#add-target').addEventListener('click', addTarget);
     }
 
     function closeHabitForm() {
@@ -53,20 +76,52 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
         container.insertAdjacentHTML('beforeend', newHabitHtml);
-        saveHabitToLocalStorage(habitName);
+        saveHabitToLocalStorage(habitName, 'habit');
         highlightToday();
         closeHabitForm();
         addDeleteEventListeners();
     }
 
-    function saveHabitToLocalStorage(habitName) {
-        let habits = JSON.parse(localStorage.getItem('habits')) || [];
-        habits.push(habitName);
-        localStorage.setItem('habits', JSON.stringify(habits));
+    function addTarget() {
+        const targetName = document.querySelector('#target-name').value;
+        const targetDays = parseInt(document.querySelector('#target-days').value);
+        if (targetName.trim() === '' || isNaN(targetDays) || targetDays <= 0) {
+            alert('Please enter a valid target name and number of days');
+            return;
+        }
+
+        let daysHtml = '';
+        for (let i = 1; i <= 7; i++) {
+            daysHtml += `<div class="day" data-day="${i}">${i}</div>`;
+        }
+
+        const newTargetHtml = `
+            <div class="habit-info">
+                <div class="habit">${targetName}</div>
+                <div class="streak-info">
+                    <span>Days: ${targetDays}</span>
+                </div>
+                <div class="week-progress">
+                    ${daysHtml}
+                </div>
+                <i class="fas fa-trash-alt delete-habit"></i>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', newTargetHtml);
+        saveHabitToLocalStorage({ name: targetName, days: targetDays }, 'target');
+        highlightToday();
+        closeHabitForm();
+        addDeleteEventListeners();
+    }
+
+    function saveHabitToLocalStorage(item, type) {
+        let items = JSON.parse(localStorage.getItem(type)) || [];
+        items.push(item);
+        localStorage.setItem(type, JSON.stringify(items));
     }
 
     function loadHabitsFromLocalStorage() {
-        let habits = JSON.parse(localStorage.getItem('habits')) || [];
+        let habits = JSON.parse(localStorage.getItem('habit')) || [];
         habits.forEach(habitName => {
             const habitHtml = `
                 <div class="habit-info">
@@ -88,6 +143,29 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             container.insertAdjacentHTML('beforeend', habitHtml);
         });
+
+        let targets = JSON.parse(localStorage.getItem('target')) || [];
+        targets.forEach(target => {
+            let daysHtml = '';
+            for (let i = 1; i <= 7; i++) {
+                daysHtml += `<div class="day" data-day="${i}">${i}</div>`;
+            }
+
+            const targetHtml = `
+                <div class="habit-info">
+                    <div class="habit">${target.name}</div>
+                    <div class="streak-info">
+                        <span>Days: ${target.days}</span>
+                    </div>
+                    <div class="week-progress">
+                        ${daysHtml}
+                    </div>
+                    <i class="fas fa-trash-alt delete-habit"></i>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', targetHtml);
+        });
+
         highlightToday();
         addDeleteEventListeners();
     }
@@ -119,11 +197,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+    
 
     function deleteHabitFromLocalStorage(habitName) {
-        let habits = JSON.parse(localStorage.getItem('habits')) || [];
+        let habits = JSON.parse(localStorage.getItem('habit')) || [];
         habits = habits.filter(habit => habit !== habitName);
-        localStorage.setItem('habits', JSON.stringify(habits));
+        localStorage.setItem('habit', JSON.stringify(habits));
+
+        let targets = JSON.parse(localStorage.getItem('target')) || [];
+        targets = targets.filter(target => target.name !== habitName);
+        localStorage.setItem('target', JSON.stringify(targets));
     }
 
     loadHabitsFromLocalStorage(); // Load habits from local storage on page load
