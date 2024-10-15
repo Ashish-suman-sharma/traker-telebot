@@ -10,10 +10,10 @@ body {
 }
 
 .container {
-    max-width: 400px;
+    max-width: 350px; /* Updated from 300px to 350px */
     margin: 0 auto;
     height: 100vh;
-    padding: 20px;
+    padding: 15px; /* Adjusted padding */
     background-color: white;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -22,20 +22,20 @@ body {
 .progress-section {
     display: flex;
     justify-content: space-between;
-    padding: 20px;
+    padding: 15px; /* Adjusted padding */
     background-color: #f0f0f0;
     border-radius: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 15px; /* Adjusted margin */
 }
 
 .progress-section h2 {
-    font-size: 18px;
+    font-size: 16px; /* Adjusted font size */
     color: #555;
-    margin-bottom: 10px;
+    margin-bottom: 8px; /* Adjusted margin */
 }
 
 .progress-percentage {
-    font-size: 36px;
+    font-size: 32px; /* Adjusted font size */
     font-weight: bold;
     color: #333;
 }
@@ -43,8 +43,8 @@ body {
 .today-progress, .overall-progress {
     flex: 1;
     text-align: center;
-    padding: 20px;
-    margin: 0 10px;
+    padding: 15px; /* Adjusted padding */
+    margin: 0 5px; /* Adjusted margin */
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -61,26 +61,26 @@ body {
 .menu {
     display: flex;
     justify-content: space-around;
-    margin: 20px 0;
+    margin: 15px 0; /* Adjusted margin */
 }
 
 .menu-item {
     background-color: #000;
     color: white;
-    padding: 10px 15px;
+    padding: 8px 12px; /* Adjusted padding */
     border-radius: 5px;
     font-size: 12px;
     text-align: center;
-    width: 80px;
+    width: 70px; /* Adjusted width */
     cursor: pointer;
 }
 
 .habit-info {
     background-color: #ffffff;
-    margin: 20px 0;
+    margin: 15px 0; /* Adjusted margin */
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 15px;
+    padding: 12px; /* Adjusted padding */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -90,16 +90,16 @@ body {
 }
 
 .habit {
-    font-size: 20px;
+    font-size: 18px; /* Adjusted font size */
     font-weight: bold;
     color: #333;
-    margin-bottom: 10px;
+    margin-bottom: 8px; /* Adjusted margin */
 }
 
 .streak-info {
-    font-size: 14px;
+    font-size: 12px; /* Adjusted font size */
     color: #666;
-    margin-bottom: 15px;
+    margin-bottom: 12px; /* Adjusted margin */
 }
 
 .week-progress {
@@ -108,13 +108,13 @@ body {
 }
 
 .day {
-    width: 35px;
-    height: 35px;
+    width: 30px; /* Adjusted width */
+    height: 30px; /* Adjusted height */
     background-color: #e0e0e0;
     border-radius: 50%;
     text-align: center;
-    line-height: 35px;
-    font-size: 14px;
+    line-height: 30px; /* Adjusted line-height */
+    font-size: 12px; /* Adjusted font size */
     color: #666;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
@@ -142,28 +142,28 @@ body {
 
 .habit-form {
     background: white;
-    padding: 20px;
+    padding: 15px; /* Adjusted padding */
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     position: relative;
-    width: 300px;
+    width: 250px; /* Adjusted width */
     text-align: center;
 }
 
 .habit-form h2 {
-    margin-bottom: 20px;
+    margin-bottom: 15px; /* Adjusted margin */
 }
 
 .habit-form input {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 20px;
+    padding: 8px; /* Adjusted padding */
+    margin-bottom: 15px; /* Adjusted margin */
     border: 1px solid #ccc;
     border-radius: 5px;
 }
 
 .habit-form button {
-    padding: 10px 20px;
+    padding: 8px 15px; /* Adjusted padding */
     background: #000;
     color: white;
     border: none;
