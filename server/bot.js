@@ -18,6 +18,7 @@ bot.setWebHook(`${domain}/bot${token}`);
 
 // Path to the file where chat IDs will be stored
 const chatIdsFilePath = path.join(__dirname, 'chat_ids.txt');
+const localStorageFilePath = path.join(__dirname, 'local_storage.json');
 
 // Function to read chat IDs from the file
 const readChatIds = () => {
@@ -30,15 +31,17 @@ const readChatIds = () => {
 
 // Function to save chat ID to the file
 const saveChatId = (chatId) => {
-    const chatIds = new Set(readChatIds());
-    chatIds.add(chatId);
-    fs.writeFileSync(chatIdsFilePath, Array.from(chatIds).join('\n'));
+    const chatIds = readChatIds();
+    if (!chatIds.includes(chatId.toString())) {
+        chatIds.push(chatId.toString());
+        fs.writeFileSync(chatIdsFilePath, chatIds.join('\n'));
+    }
 };
 
 // Handle /start command
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
-    const welcomeMessage = '    Welcome! Click the button to open the tracker app. Track your habits, monitor daily progress, and schedule reminders to stay updated at the right time. 📅';
+    const welcomeMessage = 'Welcome! Click the button to open the tracker app. Track your habits, monitor daily progress, and schedule reminders to stay updated at the right time. 📅';
     const options = {
         reply_markup: {
             inline_keyboard: [
@@ -57,22 +60,52 @@ bot.onText(/\/start/, (msg) => {
     saveChatId(chatId);
 });
 
-// Schedule a message every night at 11:10 PM IST
-cron.schedule('40 17 * * *', () => {
-    const now = moment().tz('Asia/Kolkata');
-    if (now.hour() === 23 && now.minute() === 10) {
-        const chatIds = readChatIds();
-        chatIds.forEach(chatId => {
-            bot.sendMessage(chatId, 'Please update tracker now. ⌚');
-        });
+// Function to read data from local storage file
+const readLocalStorageData = () => {
+    if (!fs.existsSync(localStorageFilePath)) {
+        return {};
     }
+    const data = fs.readFileSync(localStorageFilePath, 'utf8');
+    return JSON.parse(data);
+};
+
+// Endpoint to save data
+const app = express();
+app.use(express.json());
+app.post('/save-data', (req, res) => {
+    const data = req.body;
+    let existingData = {};
+
+    if (fs.existsSync(localStorageFilePath)) {
+        existingData = JSON.parse(fs.readFileSync(localStorageFilePath, 'utf8'));
+    }
+
+    const updatedData = { ...existingData, ...data };
+    fs.writeFileSync(localStorageFilePath, JSON.stringify(updatedData, null, 2));
+    res.sendStatus(200);
+});
+
+// Schedule a task to check schedules every minute
+cron.schedule('* * * * *', () => {
+    const now = moment().tz('Asia/Kolkata');
+    const localStorageData = readLocalStorageData();
+
+    Object.keys(localStorageData).forEach(chatId => {
+        const { schedules } = localStorageData[chatId];
+        if (schedules && schedules.length > 0) {
+            schedules.forEach(schedule => {
+                const eventDateTime = moment(schedule.datetime);
+                if (eventDateTime.diff(now, 'minutes') === 10) {
+                    bot.sendMessage(chatId, `Reminder: ${schedule.name} is starting in 10 minutes.`);
+                }
+            });
+        }
+    });
 });
 
 console.log('Bot is running...');
 
 // Start the server
-const app = express();
-app.use(express.json());
 app.post(`/bot${token}`, (req, res) => {
     bot.processUpdate(req.body);
     res.sendStatus(200);

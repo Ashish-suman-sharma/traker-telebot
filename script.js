@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const addHabitButton = document.querySelector('.menu-item:nth-child(1)');
     const addTargetButton = document.querySelector('.menu-item:nth-child(2)');
+    const addScheduleButton = document.querySelector('.menu-item:nth-child(3)');
     const container = document.querySelector('.container');
 
     addHabitButton.addEventListener('click', () => {
@@ -9,6 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addTargetButton.addEventListener('click', () => {
         openTargetForm();
+    });
+
+    addScheduleButton.addEventListener('click', () => {
+        openScheduleForm();
     });
 
     function openHabitForm() {
@@ -44,6 +49,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelector('.close-form').addEventListener('click', closeHabitForm);
         document.querySelector('#add-target').addEventListener('click', addTarget);
+    }
+
+    function openScheduleForm() {
+        const formHtml = `
+            <div class="habit-form-overlay">
+                <div class="habit-form">
+                    <span class="close-form">&times;</span>
+                    <h2>Add New Schedule</h2>
+                    <input type="text" id="event-name" placeholder="Event Name" autocomplete="off">
+                    <input type="date" id="event-date" placeholder="Event Date" autocomplete="off">
+                    <input type="time" id="event-time" placeholder="Event Time" autocomplete="off">
+                    <button id="add-schedule">OK</button>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', formHtml);
+
+        document.querySelector('.close-form').addEventListener('click', closeHabitForm);
+        document.querySelector('#add-schedule').addEventListener('click', addSchedule);
     }
 
     function closeHabitForm() {
@@ -114,10 +138,61 @@ document.addEventListener('DOMContentLoaded', () => {
         addDeleteEventListeners();
     }
 
+    function addSchedule() {
+        const eventName = document.querySelector('#event-name').value;
+        const eventDate = document.querySelector('#event-date').value;
+        const eventTime = document.querySelector('#event-time').value;
+
+        if (eventName.trim() === '' || eventDate.trim() === '' || eventTime.trim() === '') {
+            alert('Please enter a valid event name, date, and time');
+            return;
+        }
+
+        const eventDateTime = new Date(`${eventDate}T${eventTime}`);
+        const newScheduleHtml = `
+            <div class="habit-info">
+                <div class="habit">${eventName}</div>
+                <div class="streak-info countdown" data-datetime="${eventDateTime}">
+                    <span>Time Remaining: </span><span class="time-remaining"></span>
+                </div>
+                <i class="fas fa-trash-alt delete-habit"></i>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', newScheduleHtml);
+        saveHabitToLocalStorage({ name: eventName, datetime: eventDateTime }, 'schedule');
+        closeHabitForm();
+        addDeleteEventListeners();
+        updateCountdowns();
+    }
+
     function saveHabitToLocalStorage(item, type) {
         let items = JSON.parse(localStorage.getItem(type)) || [];
         items.push(item);
         localStorage.setItem(type, JSON.stringify(items));
+        saveDataToFile();
+    }
+
+    function saveDataToFile() {
+        const habits = JSON.parse(localStorage.getItem('habit')) || [];
+        const targets = JSON.parse(localStorage.getItem('target')) || [];
+        const schedules = JSON.parse(localStorage.getItem('schedule')) || [];
+        const chatId = 'YOUR_CHAT_ID'; // Replace with actual chat ID logic
+
+        const data = {
+            [chatId]: {
+                habits,
+                targets,
+                schedules
+            }
+        };
+
+        fetch('/save-data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
     }
 
     function loadHabitsFromLocalStorage() {
@@ -166,8 +241,23 @@ document.addEventListener('DOMContentLoaded', () => {
             container.insertAdjacentHTML('beforeend', targetHtml);
         });
 
+        let schedules = JSON.parse(localStorage.getItem('schedule')) || [];
+        schedules.forEach(schedule => {
+            const scheduleHtml = `
+                <div class="habit-info">
+                    <div class="habit">${schedule.name}</div>
+                    <div class="streak-info countdown" data-datetime="${schedule.datetime}">
+                        <span>Time Remaining: </span><span class="time-remaining"></span>
+                    </div>
+                    <i class="fas fa-trash-alt delete-habit"></i>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', scheduleHtml);
+        });
+
         highlightToday();
         addDeleteEventListeners();
+        updateCountdowns();
     }
 
     function highlightToday() {
@@ -187,28 +277,58 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteIcon.addEventListener('click', (event) => {
                 const habitCard = event.target.closest('.habit-info');
                 const habitName = habitCard.querySelector('.habit').textContent;
+                const type = habitCard.querySelector('.countdown') ? 'schedule' : habitCard.querySelector('.streak-info span').textContent.includes('Days') ? 'target' : 'habit';
                 const password = prompt('Enter password to delete habit:');
                 if (password === '915566') {
                     habitCard.remove();
-                    deleteHabitFromLocalStorage(habitName);
+                    deleteHabitFromLocalStorage(habitName, type);
                 } else {
                     alert('Incorrect password');
                 }
             });
         });
     }
-    
 
-    function deleteHabitFromLocalStorage(habitName) {
-        let habits = JSON.parse(localStorage.getItem('habit')) || [];
-        habits = habits.filter(habit => habit !== habitName);
-        localStorage.setItem('habit', JSON.stringify(habits));
-
-        let targets = JSON.parse(localStorage.getItem('target')) || [];
-        targets = targets.filter(target => target.name !== habitName);
-        localStorage.setItem('target', JSON.stringify(targets));
+    function deleteHabitFromLocalStorage(habitName, type) {
+        let items = JSON.parse(localStorage.getItem(type)) || [];
+        items = items.filter(item => item.name !== habitName && item !== habitName);
+        localStorage.setItem(type, JSON.stringify(items));
     }
 
-    loadHabitsFromLocalStorage(); // Load habits from local storage on page load
-    highlightToday(); // Call this function to highlight the current day on page load
+    function updateCountdowns() {
+        const countdownElements = document.querySelectorAll('.countdown');
+        countdownElements.forEach(element => {
+            const eventDateTime = new Date(element.getAttribute('data-datetime'));
+            const { timeRemaining, hasPassed } = calculateTimeRemaining(eventDateTime);
+            if (hasPassed) {
+                const habitCard = element.closest('.habit-info');
+                const habitName = habitCard.querySelector('.habit').textContent;
+                habitCard.remove();
+                deleteHabitFromLocalStorage(habitName, 'schedule');
+            } else {
+                element.querySelector('.time-remaining').textContent = timeRemaining;
+            }
+        });
+    }
+
+    function calculateTimeRemaining(eventDateTime) {
+        const now = new Date();
+        const timeDiff = eventDateTime - now;
+
+        if (timeDiff <= 0) {
+            return { timeRemaining: 'Event has passed', hasPassed: true };
+        }
+
+        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+        return { timeRemaining: `${days}d ${hours}h ${minutes}m ${seconds}s`, hasPassed: false };
+    }
+
+    setInterval(updateCountdowns, 1000);
+
+    loadHabitsFromLocalStorage();
+    highlightToday();
 });
