@@ -5,7 +5,14 @@ const path = require('path');
 
 // Replace with your Telegram bot token
 const token = '7820539863:AAGBNXg8HOkFHNV31MNGmBKe19_IN3DneOw';
-const bot = new TelegramBot(token, { polling: true });
+
+// Replace with your domain and port
+const domain = 'https://traker-telebot-1.onrender.com';
+const port = process.env.PORT || 3000;
+
+// Create a bot instance
+const bot = new TelegramBot(token, { webHook: true });
+bot.setWebHook(`${domain}/bot${token}`);
 
 // Path to the file where chat IDs will be stored
 const chatIdsFilePath = path.join(__dirname, 'chat_ids.txt');
@@ -57,3 +64,15 @@ cron.schedule('0 23 * * *', () => {
 });
 
 console.log('Bot is running...');
+
+// Start the server
+const express = require('express');
+const app = express();
+app.use(express.json());
+app.post(`/bot${token}`, (req, res) => {
+    bot.processUpdate(req.body);
+    res.sendStatus(200);
+});
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
