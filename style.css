@@ -106,6 +106,7 @@ body {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 12px;
+    position: relative; /* Add this line */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -151,6 +152,16 @@ body {
 
 .today {
     border: 2px solid #caf438;
+}
+
+/* Delete Icon */
+.delete-habit {
+    position: absolute; /* Add this line */
+    top: 10px; /* Adjust as needed */
+    right: 10px; /* Adjust as needed */
+    cursor: pointer;
+    color: #ff7a01;
+    font-size: 16px;
 }
 
 /* Habit Form Overlay */

@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="habit-form">
                     <span class="close-form">&times;</span>
                     <h2>Add New Habit</h2>
-                                        <input type="text" id="habit-name" placeholder="Habit Name" autocomplete="off">
+                    <input type="text" id="habit-name" placeholder="Habit Name" autocomplete="off">
                     <button id="add-habit">OK</button>
                 </div>
             </div>
@@ -49,12 +49,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="day" data-day="5">Sa</div>
                     <div class="day" data-day="6">Su</div>
                 </div>
+                <i class="fas fa-trash-alt delete-habit"></i>
             </div>
         `;
         container.insertAdjacentHTML('beforeend', newHabitHtml);
         saveHabitToLocalStorage(habitName);
         highlightToday();
         closeHabitForm();
+        addDeleteEventListeners();
     }
 
     function saveHabitToLocalStorage(habitName) {
@@ -81,11 +83,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="day" data-day="5">Sa</div>
                         <div class="day" data-day="6">Su</div>
                     </div>
+                    <i class="fas fa-trash-alt delete-habit"></i>
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', habitHtml);
         });
         highlightToday();
+        addDeleteEventListeners();
     }
 
     function highlightToday() {
@@ -98,6 +102,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 dayElement.classList.add('today');
             }
         });
+    }
+
+    function addDeleteEventListeners() {
+        document.querySelectorAll('.delete-habit').forEach(deleteIcon => {
+            deleteIcon.addEventListener('click', (event) => {
+                const habitCard = event.target.closest('.habit-info');
+                const habitName = habitCard.querySelector('.habit').textContent;
+                const password = prompt('Enter password to delete habit:');
+                if (password === '915566') {
+                    habitCard.remove();
+                    deleteHabitFromLocalStorage(habitName);
+                } else {
+                    alert('Incorrect password');
+                }
+            });
+        });
+    }
+
+    function deleteHabitFromLocalStorage(habitName) {
+        let habits = JSON.parse(localStorage.getItem('habits')) || [];
+        habits = habits.filter(habit => habit !== habitName);
+        localStorage.setItem('habits', JSON.stringify(habits));
     }
 
     loadHabitsFromLocalStorage(); // Load habits from local storage on page load
