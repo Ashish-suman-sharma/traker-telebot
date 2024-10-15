@@ -15,7 +15,7 @@ body {
 .container {
     max-width: 350px;
     margin: 0 auto;
-    height: 100vh;
+    min-height: 100vh; /* Changed from height to min-height */
     padding: 15px;
     background-color: #002733;
     border-radius: 10px;
@@ -236,42 +236,4 @@ body {
     cursor: pointer;
     font-size: 20px;
     color: #caf438;
-}
-
-/* Popup Styles */
-.popup {
-    position: absolute;
-    top: -50px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #001925;
-    border-radius: 50%;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.popup-arrow {
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-top: 10px solid #001925;
-}
-
-.popup-icons i {
-    color: #caf438;
-    margin: 0 5px;
-    cursor: pointer;
-    transition: color 0.3s ease;
-}
-
-.popup-icons i:hover {
-    color: #ff7a01;
 }
